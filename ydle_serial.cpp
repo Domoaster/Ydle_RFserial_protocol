@@ -170,7 +170,7 @@ void ydle_serial::Send(frame_ydle *frame) {
     AddBytes(0xFF);
     AddBytes(0xFF);
     AddBytes(0xFF);
-    AddBytes(66);
+    AddBytes(start_bit);
     AddBytes(frame->receptor);
     AddBytes(frame->sender);
     AddBytes((frame->type << 5) + frame->taille);
@@ -178,29 +178,6 @@ void ydle_serial::Send(frame_ydle *frame) {
         AddBytes(frame->data[j]);
     }
     AddBytes(frame->crc);
-
-    _connector->Send(bytesToSend);
-    bytesToSend.clear();
-    
-}
-void ydle_serial::TestSend() {
-    
-    // Durée d'un bit
-    bytesToSend.push_back((1000 & 0xFF00) >> 8);
-    bytesToSend.push_back(1000 & 0xFF);
-    // Trame 
-    AddBytes(0xFF);
-    AddBytes(0xFF);
-    AddBytes(0xFF);
-    AddBytes(0xFF);
-    AddBytes(start_bit);
-    AddBytes(2);
-    AddBytes(1);
-    AddBytes((3 << 5) + 1);
-    /*for (int j = 0; j < frame->taille - 1; j++) {
-        AddBytes(frame->data[j]);
-    }*/
-    AddBytes(52);
 
     _connector->Send(bytesToSend);
     bytesToSend.clear();
@@ -234,7 +211,205 @@ uint8_t ydle_serial::computeCrc(frame_ydle *frame) {
 }
 
 Json::Value ydle_serial::onIHMRequest(const WebServer::HTTPRequest *request) {
+Json::Value reply;
 
+  string url = request->Url();
+
+  if(std::count(url.begin(), url.end(), '/') > 1){
+    // Split the URL
+    const char *pch = std::strtok((char*)url.data(), "/" );
+    pch = std::strtok(NULL, "/" );
+    url = pch;
+  }
+
+  if(url.compare("on") == 0){
+    string nid = request->GetParameter("nid");
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(nid.length() == 0 || target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_ON, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
+  }
+  else if(url.compare("off") == 0){
+    string nid = request->GetParameter("nid");
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(nid.length() == 0 || target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_OFF, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
+  }
+  else if(url.compare("link") == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_LINK, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
+  }
+  else if(url.compare("reset") == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_RESET, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
+  }
+  else if(url.compare("set") == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_SET, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
+  }
+  else if(url.compare("get") == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_GET, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
+  }
+  else if(url.compare("ping") == 0){
+    string target = request->GetParameter("target");
+    string sender = request->GetParameter("sender");
+    if(target.length() == 0 || sender.length() == 0){
+      reply["result"] = "KO";
+      reply["message"] = "A parameter is missing";
+    }else{
+      frame_ydle frame;
+      InitFrame(&frame, atoi(sender.c_str()), atoi(target.c_str()), YDLE_TYPE_CMD) ;
+      addData(&frame, YDLE_CMD_PING, 1);
+      Send(&frame) ;
+      reply["result"] = "OK";
+      reply["message"] = "Sended";
+    }
+  }else{
+    reply["result"] = "KO";
+    reply["message"] = "Unknow command";
+  }
+  return reply;
+}
+
+// Ajout d'une valeur bool
+void ydle_serial::addData(frame_ydle *frame, int index, bool data)
+{
+  if (frame->taille < 29)
+  {
+    frame->data[frame->taille] = index << 4;
+    frame->data[frame->taille] += YDLE_DATA_BOOL << 1;
+    frame->data[frame->taille] += data & 0x0F;
+    frame->taille++;
+  }
+}
+
+// Ajout d'une valeur int
+void ydle_serial::addData(frame_ydle *frame, int index, int data)
+{
+  // 8 bits int
+  if (data > -256 && data < 256)
+  {
+    if (frame->taille < 28) 
+    {
+      frame->data[frame->taille] = index << 4;
+      frame->data[frame->taille] += YDLE_DATA_UINT8 << 1;
+      frame->data[frame->taille] += (data < 0 ? 1 : 0) << 0;
+      frame->data[frame->taille + 1] = data;
+      DOMOASTER_DEBUG << "toto index : " << index << ", value : " << (int)frame->data[frame->taille];
+      frame->taille += 2;
+    }
+  }
+  // 16 bits int
+  else if (data > -65536 && data < 65536) 
+  {
+    if (frame->taille < 27)
+    {
+      frame->data[frame->taille] = index << 4;
+      frame->data[frame->taille] += YDLE_DATA_UINT8 << 1;
+      frame->data[frame->taille] += (data < 0 ? 1 : 0) << 0;
+      frame->data[frame->taille + 1] = (data >> 8) & 0xFF;
+      frame->data[frame->taille + 2] = data;
+      frame->taille += 3;
+    }
+  }
+}
+
+// Ajout d'une valeur long int
+void ydle_serial::addData(frame_ydle *frame, int index, long int data)
+{
+  // 24 bits int
+  if (data > -16777216 && data < 16777216)
+  {
+    if (frame->taille < 26)
+    {
+      frame->data[frame->taille] = index << 4;
+      frame->data[frame->taille] += YDLE_DATA_UINT8 << 1;
+      frame->data[frame->taille] += (data < 0 ? 1 : 0) << 0;
+      frame->data[frame->taille + 1] = (data >> 16);
+      frame->data[frame->taille + 2] = (data >> 8);
+      frame->data[frame->taille + 3] = data;
+      frame->taille += 4;
+    }
+  }
+  // 32 bits int
+  else if (data > -4294967296 && data < 4294967296)
+  {
+    if (frame->taille < 25)
+    {
+      frame->data[frame->taille] = index << 4;
+      frame->data[frame->taille] += YDLE_DATA_UINT8 << 1;
+      frame->data[frame->taille] += (data < 0 ? 1 : 0) << 0;
+      frame->data[frame->taille + 1] = (data >> 24) & 0xFF;
+      frame->data[frame->taille + 2] = (data >> 16) & 0xFF;
+      frame->data[frame->taille + 3] = (data >> 8) & 0xFF;
+      frame->data[frame->taille + 4] = data;
+      frame->taille += 5;
+    }
+  }
 }
 
 void ydle_serial::AddBytes(uint8_t byte_in) {

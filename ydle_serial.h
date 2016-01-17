@@ -22,10 +22,13 @@
 #define YDLE_DATA_UINT16			2 // (16 bits / 24 bits data)
 #define YDLE_DATA_UINT24			3 // (24 bits / 32 bits data)
 
-#define YDLE_CMD_LINK  0 //Link a node to the master
-#define YDLE_CMD_ON    1 //Send a ON command to node data = Né output
-#define YDLE_CMD_OFF   2 //Send a OFF command to node data = Né output
-#define YDLE_CMD_RESET 3 //Ask a node to reset is configuration
+#define YDLE_CMD_LINK				0 // Link a node to the master
+#define YDLE_CMD_ON					1 // Send a ON command to node data = N° output
+#define YDLE_CMD_OFF				2 // Send a OFF command to node data = N° output
+#define YDLE_CMD_RESET				3 // Ask a node to reset is configuration
+#define YDLE_CMD_SET				4 // Set value
+#define YDLE_CMD_GET				5 // Get value
+#define YDLE_CMD_PING				6 // PING
 
 namespace domoaster {
 
@@ -43,7 +46,7 @@ class ydle_serial : public IProtocol
     
     void Init (IConnector *) ;
     
-    std::string getDefaultNode () { return "node_ydle_serial" ; }
+    std::string getDefaultNodeType () { return "node_ydle_serial" ; }
     Json::Value onIHMRequest (const WebServer::HTTPRequest *request) ;
     
         struct ACKCmd_t
@@ -62,7 +65,7 @@ class ydle_serial : public IProtocol
     uint8_t bit_count;
     int rx_bytes_count;
     
-    uint8_t start_bit = 0b01000010;
+    static uint8_t start_bit = 0b01000010;
     uint8_t receptor;
     uint8_t sender;
     uint8_t type;
@@ -70,6 +73,12 @@ class ydle_serial : public IProtocol
     uint8_t m_data[YDLE_MAX_SIZE_FRAME];
     
     std::vector<uint8_t> bytesToSend ;
+
+    // Ajout d'une donnée
+    void addData(frame_ydle *frame, int type, bool data) ;
+    void addData(frame_ydle *frame, int type, int data) ;
+    void addData(frame_ydle *frame, int type, long int data) ;
+    void addData(frame_ydle *frame, int type, float data) ;
 
     
     void InitReception () ;
@@ -80,7 +89,6 @@ class ydle_serial : public IProtocol
     void onFrameReceived (frame_ydle *frame) ;
     void SendACK (frame_ydle *frame) ;
     void Send (frame_ydle *frame) ;
-    void TestSend () ;
     void AddBytes(uint8_t byte_in);
     
 } ;

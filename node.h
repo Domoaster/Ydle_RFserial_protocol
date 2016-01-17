@@ -4,7 +4,7 @@
 
 namespace domoaster {
 
-class node_ydle_serial : public INode 
+class node_ydle_serial : public INodeType 
 {
   public:
     std::string Name () { return "Node Ydle over serial" ; }
